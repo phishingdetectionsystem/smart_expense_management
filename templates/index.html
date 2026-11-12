@@ -1,0 +1,762 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#6558e8">
+    <title>SmartSpend | Expense Management</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <!-- GSAP animation library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+    <!-- AUTHENTICATION -->
+    <div id="auth-screen" class="auth-screen">
+        <div class="auth-card">
+            <div class="brand auth-brand">
+                <div class="brand-icon">S</div>
+                <div>
+                    <h2>SmartSpend</h2>
+                    <p>Personal Finance Manager</p>
+                </div>
+            </div>
+
+            <!-- LOGIN -->
+            <div id="login-panel">
+                <div class="auth-heading">
+                    <h1>Welcome back!</h1>
+                    <p>Login to manage your finances.</p>
+                </div>
+
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="login-email">Email Address</label>
+                        <input type="email" id="login-email" placeholder="Enter your email" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="login-password">Password</label>
+                        <input type="password" id="login-password" placeholder="Enter your password" required>
+                    </div>
+
+                    <p id="login-message" class="form-message"></p>
+
+                    <button type="submit" class="btn btn-primary btn-full">Login</button>
+                </form>
+
+                <p class="auth-switch">
+                    Don't have an account?
+                    <button type="button" id="show-register">Create account</button>
+                </p>
+            </div>
+
+            <!-- REGISTER -->
+            <div id="register-panel" hidden>
+                <div class="auth-heading">
+                    <h1>Create account</h1>
+                    <p>Start managing your money smartly.</p>
+                </div>
+
+                <form id="register-form">
+                    <div class="form-group">
+                        <label for="register-name">Full Name</label>
+                        <input type="text" id="register-name" placeholder="Enter your name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="register-email">Email Address</label>
+                        <input type="email" id="register-email" placeholder="Enter your email" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="register-password">Password</label>
+                        <input type="password" id="register-password" placeholder="Minimum 8 characters" minlength="8" required>
+                    </div>
+
+                    <p id="register-message" class="form-message"></p>
+
+                    <button type="submit" class="btn btn-primary btn-full">Create Account</button>
+                </form>
+
+                <p class="auth-switch">
+                    Already have an account?
+                    <button type="button" id="show-login">Login</button>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APPLICATION -->
+    <div id="app-shell" class="app-shell" hidden>
+
+        <!-- MOBILE HEADER -->
+        <header class="mobile-header">
+            <button type="button" id="menu-toggle" class="icon-button" aria-label="Open navigation">☰</button>
+
+            <div class="brand">
+                <div class="brand-icon">S</div>
+                <h2>SmartSpend</h2>
+            </div>
+
+            <button type="button" id="theme-toggle" class="icon-button" aria-label="Change theme">🌙</button>
+        </header>
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar" id="sidebar">
+
+            <div class="sidebar-brand brand">
+                <div class="brand-icon">S</div>
+                <div>
+                    <h2>SmartSpend</h2>
+                    <p>Finance Manager</p>
+                </div>
+            </div>
+
+            <div class="sidebar-user">
+                <div class="user-avatar">U</div>
+                <div class="user-details">
+                    <h3 id="user-name">User</h3>
+                    <p id="user-email">user@email.com</p>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav" aria-label="Main navigation">
+
+                <!-- Animated active navigation background -->
+                <div class="nav-indicator" aria-hidden="true"></div>
+
+                <p class="nav-heading">MAIN MENU</p>
+
+                <button type="button" class="nav-link active" data-section="dashboard">
+                    <span>▦</span> Dashboard
+                </button>
+
+                <button type="button" class="nav-link" data-section="add-expense">
+                    <span>＋</span> Add Expense
+                </button>
+
+                <button type="button" class="nav-link" data-section="add-income">
+                    <span>↗</span> Add Income
+                </button>
+
+                <button type="button" class="nav-link" data-section="transactions">
+                    <span>⇄</span> Transactions
+                </button>
+
+                <p class="nav-heading">ANALYSIS</p>
+
+                <button type="button" class="nav-link" data-section="analytics">
+                    <span>▥</span> Analytics
+                </button>
+
+                <button type="button" class="nav-link" data-section="reports">
+                    <span>▤</span> Reports
+                </button>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <button type="button" id="sidebar-theme-toggle" class="nav-link">
+                    <span>◐</span> Change Theme
+                </button>
+
+                <button type="button" id="logout-btn" class="nav-link logout-link">
+                    <span>⇥</span> Logout
+                </button>
+
+                <p class="sidebar-footer">SmartSpend © 2026</p>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+
+            <!-- DASHBOARD -->
+            <section id="dashboard" class="page-section active">
+                <div class="page-header">
+                    <div>
+                        <p class="eyebrow">OVERVIEW</p>
+                        <h1>Dashboard</h1>
+                        <p class="page-subtitle">Welcome back! Here's your financial overview.</p>
+                    </div>
+
+                    <div class="header-actions">
+                        <button type="button" class="btn btn-outline" data-go="add-expense">
+                            + Add Expense
+                        </button>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-top">
+                            <span>Total Expenses</span>
+                            <span class="stat-icon purple">₹</span>
+                        </div>
+                        <h2 id="total-expenses">₹0.00</h2>
+                        <p>All recorded expenses</p>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-top">
+                            <span>This Month</span>
+                            <span class="stat-icon orange">▦</span>
+                        </div>
+                        <h2 id="monthly-expenses">₹0.00</h2>
+                        <p>Current month spending</p>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-top">
+                            <span>Total Transactions</span>
+                            <span class="stat-icon blue">⇄</span>
+                        </div>
+                        <h2 id="total-transactions">0</h2>
+                        <p>Recorded expense entries</p>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-top">
+                            <span>Monthly Income</span>
+                            <span class="stat-icon green">↗</span>
+                        </div>
+                        <h2 id="current-income">₹0.00</h2>
+                        <p>Income recorded this month</p>
+                    </div>
+                </div>
+
+                <div class="section-heading">
+                    <div>
+                        <h2>Financial Insights</h2>
+                        <p>Understand your monthly financial performance.</p>
+                    </div>
+                </div>
+
+                <div class="insights-grid">
+                    <div class="insight-card">
+                        <p>Previous Month Expenses</p>
+                        <h2 id="previous-month-expenses">₹0.00</h2>
+                        <span>Previous month spending</span>
+                    </div>
+
+                    <div class="insight-card">
+                        <p>Monthly Change</p>
+                        <h2 id="monthly-change">0%</h2>
+                        <span>Compared with previous month</span>
+                    </div>
+
+                    <div class="insight-card">
+                        <p>Highest Spending Category</p>
+                        <h2 id="highest-category">--</h2>
+                        <span>Top spending category this month</span>
+                    </div>
+
+                    <div class="insight-card">
+                        <p>Available Savings</p>
+                        <h2 id="savings-amount">₹0.00</h2>
+                        <span id="savings-percentage">0% savings rate</span>
+                    </div>
+                </div>
+
+                <div class="section-heading">
+                    <div>
+                        <h2>Spending Overview</h2>
+                        <p>Visual breakdown of your expenses.</p>
+                    </div>
+                </div>
+
+                <div class="dashboard-chart-grid">
+                    <div class="content-card chart-card">
+                        <div class="card-heading">
+                            <h3>Expenses by Category</h3>
+                            <span>Pie Chart</span>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="category-pie-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="content-card chart-card">
+                        <div class="card-heading">
+                            <h3>Category Comparison</h3>
+                            <span>Bar Chart</span>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="category-bar-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-heading">
+                    <div>
+                        <h2>Recent Expenses</h2>
+                        <p>Your latest recorded transactions.</p>
+                    </div>
+
+                    <button type="button" class="text-button" data-go="transactions">
+                        View All →
+                    </button>
+                </div>
+
+                <div class="content-card table-card">
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Expense</th>
+                                    <th>Category</th>
+                                    <th>Date</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recent-expense-list">
+                                <tr>
+                                    <td colspan="4" class="empty-state">No expenses available.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ADD EXPENSE -->
+            <section id="add-expense" class="page-section">
+                <div class="page-header">
+                    <div>
+                        <p class="eyebrow">TRANSACTIONS</p>
+                        <h1>Add Expense</h1>
+                        <p class="page-subtitle">Record your daily spending.</p>
+                    </div>
+                </div>
+
+                <div class="content-card form-card">
+                    <div class="card-heading">
+                        <h2>Expense Details</h2>
+                        <span class="required-note">* Required fields</span>
+                    </div>
+
+                    <form id="expense-form">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="title">Expense Title *</label>
+                                <input type="text" id="title" placeholder="Example: Grocery Shopping" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="amount">Amount (₹) *</label>
+                                <input type="number" id="amount" placeholder="Enter amount" min="0.01" step="0.01" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="category">Category *</label>
+                                <select id="category" required>
+                                    <option value="">Select Category</option>
+                                    <option value="Food">Food</option>
+                                    <option value="Transport">Transport</option>
+                                    <option value="Shopping">Shopping</option>
+                                    <option value="Bills">Bills</option>
+                                    <option value="Education">Education</option>
+                                    <option value="Health">Health</option>
+                                    <option value="Entertainment">Entertainment</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="expense-date">Expense Date *</label>
+                                <input type="date" id="expense-date" required>
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label for="description">Description</label>
+                                <textarea id="description" rows="4" placeholder="Additional details (optional)"></textarea>
+                            </div>
+                        </div>
+
+                        <p id="form-message" class="form-message"></p>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Save Expense</button>
+                            <button type="reset" class="btn btn-outline">Clear Form</button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- ADD INCOME -->
+            <section id="add-income" class="page-section">
+                <div class="page-header">
+                    <div>
+                        <p class="eyebrow">INCOME MANAGEMENT</p>
+                        <h1>Add Income</h1>
+                        <p class="page-subtitle">Record salary, business income, and other earnings.</p>
+                    </div>
+                </div>
+
+                <div class="content-card form-card">
+                    <div class="card-heading">
+                        <h2>Income Details</h2>
+                        <span class="required-note">* Required fields</span>
+                    </div>
+
+                    <form id="income-form">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="income-title">Income Source *</label>
+                                <input type="text" id="income-title" placeholder="Example: Monthly Salary" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="income-amount">Amount (₹) *</label>
+                                <input type="number" id="income-amount" placeholder="Enter amount" min="0.01" step="0.01" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="income-date">Income Date *</label>
+                                <input type="date" id="income-date" required>
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label for="income-description">Description</label>
+                                <textarea id="income-description" rows="4" placeholder="Additional details (optional)"></textarea>
+                            </div>
+                        </div>
+
+                        <p id="income-message" class="form-message"></p>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Save Income</button>
+                            <button type="reset" class="btn btn-outline">Clear Form</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="section-heading">
+                    <div>
+                        <h2>Income History</h2>
+                        <p>Your recorded income transactions.</p>
+                    </div>
+                </div>
+
+                <div class="content-card table-card">
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Income Source</th>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Amount</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="income-list">
+                                <tr>
+                                    <td colspan="5" class="empty-state">No income records available.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TRANSACTIONS -->
+            <section id="transactions" class="page-section">
+                <div class="page-header">
+                    <div>
+                        <p class="eyebrow">RECORDS</p>
+                        <h1>Transactions</h1>
+                        <p class="page-subtitle">View, search, edit, and delete your expenses.</p>
+                    </div>
+
+                    <button type="button" class="btn btn-primary" data-go="add-expense">
+                        + Add Expense
+                    </button>
+                </div>
+
+                <div class="content-card">
+                    <div class="toolbar">
+                        <div class="search-box">
+                            <span>⌕</span>
+                            <input type="search" id="search-input" placeholder="Search expenses...">
+                        </div>
+                    </div>
+
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Expense</th>
+                                    <th>Category</th>
+                                    <th>Date</th>
+                                    <th>Amount</th>
+                                    <th>Description</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="expense-list">
+                                <tr>
+                                    <td colspan="6" class="empty-state">No expenses available.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ANALYTICS -->
+            <section id="analytics" class="page-section">
+                <div class="page-header">
+                    <div>
+                        <p class="eyebrow">FINANCIAL ANALYSIS</p>
+                        <h1>Analytics</h1>
+                        <p class="page-subtitle">Understand where your money goes.</p>
+                    </div>
+                </div>
+
+                <div class="insights-grid">
+                    <div class="insight-card">
+                        <p>Total Monthly Income</p>
+                        <h2 id="analytics-income">₹0.00</h2>
+                    </div>
+
+                    <div class="insight-card">
+                        <p>Total Monthly Expenses</p>
+                        <h2 id="analytics-expenses">₹0.00</h2>
+                    </div>
+
+                    <div class="insight-card">
+                        <p>Monthly Savings</p>
+                        <h2 id="analytics-savings">₹0.00</h2>
+                    </div>
+
+                    <div class="insight-card">
+                        <p>Savings Percentage</p>
+                        <h2 id="analytics-savings-percentage">0%</h2>
+                    </div>
+                </div>
+
+                <div class="analytics-grid">
+                    <div class="content-card chart-card">
+                        <div class="card-heading"><h3>Expense Distribution</h3></div>
+                        <div class="chart-container">
+                            <canvas id="category-pie-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="content-card chart-card">
+                        <div class="card-heading"><h3>Category Spending</h3></div>
+                        <div class="chart-container">
+                            <canvas id="category-bar-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="content-card chart-card">
+                        <div class="card-heading"><h3>Daily Spending Trend</h3></div>
+                        <div class="chart-container">
+                            <canvas id="daily-trend-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="content-card chart-card">
+                        <div class="card-heading"><h3>Monthly Spending Trend</h3></div>
+                        <div class="chart-container">
+                            <canvas id="monthly-trend-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- REPORTS -->
+            <section id="reports" class="page-section">
+                <div class="page-header">
+                    <div>
+                        <p class="eyebrow">FINANCIAL REPORTS</p>
+                        <h1>Reports</h1>
+                        <p class="page-subtitle">Generate and download your expense reports.</p>
+                    </div>
+                </div>
+
+                <div class="content-card form-card">
+                    <div class="card-heading"><h2>Generate Report</h2></div>
+
+                    <div class="report-filter-grid">
+                        <div class="form-group">
+                            <label for="report-type">Report Type</label>
+                            <select id="report-type">
+                                <option value="monthly">Monthly Report</option>
+                                <option value="yearly">Yearly Report</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" id="report-month-group">
+                            <label for="report-month">Month</label>
+                            <select id="report-month">
+                                <option value="1">January</option>
+                                <option value="2">February</option>
+                                <option value="3">March</option>
+                                <option value="4">April</option>
+                                <option value="5">May</option>
+                                <option value="6">June</option>
+                                <option value="7">July</option>
+                                <option value="8">August</option>
+                                <option value="9">September</option>
+                                <option value="10">October</option>
+                                <option value="11">November</option>
+                                <option value="12">December</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="report-year">Year</label>
+                            <input type="number" id="report-year" min="2000" max="2100">
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" id="generate-report" class="btn btn-primary">Generate Report</button>
+                        <button type="button" id="download-pdf" class="btn btn-outline">↓ Download PDF</button>
+                        <button type="button" id="download-excel" class="btn btn-outline">↓ Download Excel</button>
+                    </div>
+                </div>
+
+                <div class="report-summary-grid">
+                    <div class="stat-card">
+                        <p>Total Expenses</p>
+                        <h2 id="report-total">₹0.00</h2>
+                    </div>
+
+                    <div class="stat-card">
+                        <p>Total Transactions</p>
+                        <h2 id="report-count">0</h2>
+                    </div>
+                </div>
+
+                <div class="content-card report-result-card">
+                    <div class="card-heading"><h2>Category Summary</h2></div>
+                    <div id="report-categories" class="category-summary">
+                        <p class="empty-state">Generate a report to view details.</p>
+                    </div>
+                </div>
+
+                <div id="report-monthly-breakdown-section" class="content-card report-result-card" hidden>
+                    <div class="card-heading"><h2>Monthly Breakdown</h2></div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Month</th>
+                                    <th>Total Expenses</th>
+                                </tr>
+                            </thead>
+                            <tbody id="report-monthly-breakdown"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="content-card report-result-card">
+                    <div class="card-heading"><h2>Expense Details</h2></div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Expense</th>
+                                    <th>Category</th>
+                                    <th>Date</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody id="report-expenses">
+                                <tr>
+                                    <td colspan="4" class="empty-state">No report generated.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- FOOTER -->
+            <footer class="main-footer">
+                <p>© 2026 SmartSpend. Manage your money smarter.</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- EDIT EXPENSE MODAL -->
+    <div id="edit-modal" class="modal" hidden>
+        <div class="modal-overlay" id="modal-overlay"></div>
+
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2>Edit Expense</h2>
+                    <p>Update your transaction details.</p>
+                </div>
+
+                <button type="button" id="close-modal" class="modal-close" aria-label="Close">×</button>
+            </div>
+
+            <form id="edit-expense-form">
+                <input type="hidden" id="edit-id">
+
+                <div class="form-group">
+                    <label for="edit-title">Expense Title *</label>
+                    <input type="text" id="edit-title" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-amount">Amount (₹) *</label>
+                    <input type="number" id="edit-amount" min="0.01" step="0.01" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-category">Category *</label>
+                    <select id="edit-category" required>
+                        <option value="Food">Food</option>
+                        <option value="Transport">Transport</option>
+                        <option value="Shopping">Shopping</option>
+                        <option value="Bills">Bills</option>
+                        <option value="Education">Education</option>
+                        <option value="Health">Health</option>
+                        <option value="Entertainment">Entertainment</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-date">Expense Date *</label>
+                    <input type="date" id="edit-date" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-description">Description</label>
+                    <textarea id="edit-description" rows="3"></textarea>
+                </div>
+
+                <p id="edit-message" class="form-message"></p>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Update Expense</button>
+                    <button type="button" id="cancel-edit" class="btn btn-outline">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- NOTIFICATION -->
+    <div id="toast" class="toast" role="status" aria-live="polite">
+        <span id="toast-message"></span>
+    </div>
+
+    <!-- MAIN JAVASCRIPT -->
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
